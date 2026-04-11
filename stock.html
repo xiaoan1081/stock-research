@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>個股研究</title>
 <script src="data/stocks.js"></script>
-<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; color: #0f172a; font-size: 16px; }
@@ -30,16 +29,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; colo
 .conv-medium { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
 .conv-low    { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
 
-/* Stats row */
-.stats-row { display: flex; gap: 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
-.stat-cell { flex: 1; padding: 12px 16px; border-right: 1px solid #e2e8f0; text-align: center; }
-.stat-cell:last-child { border-right: none; }
-.stat-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-.stat-value { font-size: 20px; font-weight: 700; color: #0f172a; }
-.stat-value.up-hot  { color: #dc2626; }
-.stat-value.up-warm { color: #d97706; }
-.stat-value.up-cool { color: #16a34a; }
-.stat-null { color: #94a3b8; font-size: 16px; }
 
 /* Section card */
 .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
@@ -88,10 +77,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; colo
 .tl-date { color: #0ea5e9; font-weight: 600; font-size: 13px; white-space: nowrap; padding-top: 2px; min-width: 80px; }
 .tl-event { font-size: 14px; color: #374151; line-height: 1.6; }
 
-/* Chart */
-.chart-wrap { margin-bottom: 0; }
-#chart-container { height: 320px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; }
-#chart-status { font-size: 13px; color: #94a3b8; margin-top: 6px; text-align: right; }
 
 /* Research notes */
 .notes-box { background: #faf5ff; border-left: 3px solid #a855f7; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; color: #374151; line-height: 1.8; }
@@ -163,12 +148,6 @@ function fmtPrice(p, currency) {
   return sym + p.toLocaleString();
 }
 
-function upsideClass(pct) {
-  if (pct == null) return '';
-  if (pct >= 50) return 'up-hot';
-  if (pct >= 20) return 'up-warm';
-  return 'up-cool';
-}
 
 function convBadge(c) {
   const m = { high: ['conv-high','高信念'], medium: ['conv-medium','中信念'], low: ['conv-low','低信念'] };
@@ -201,29 +180,6 @@ function initPage() {
   document.getElementById('topbar-title').textContent = `${TICKER}  ${memo.name}`;
   document.getElementById('topbar-sub').textContent = memo.header || '';
 
-  // ── Hero ──
-  const upside = stock.upside_pct;
-  const uCls   = upsideClass(upside);
-
-  const statsHtml = `
-    <div class="stats-row">
-      <div class="stat-cell">
-        <div class="stat-label">現價</div>
-        <div class="stat-value">${fmtPrice(stock.price, currency)}</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label">目標價</div>
-        <div class="stat-value">${fmtPrice(stock.target, currency)}</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label">上檔空間</div>
-        <div class="stat-value ${uCls}">${upside != null ? '+' + upside.toFixed(1) + '%' : '<span class="stat-null">—</span>'}</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label">本益比</div>
-        <div class="stat-value">${stock.pe != null ? stock.pe + 'x' : '<span class="stat-null">—</span>'}</div>
-      </div>
-    </div>`;
 
   // ── 1. Thesis ──
   const thesisHtml = `
@@ -383,17 +339,7 @@ function initPage() {
       ${tlItems || '<div style="color:#94a3b8;font-size:14px">暫無資料</div>'}
     </div>`;
 
-  // ── 8. Chart ──
-  const chartHtml = `
-    <div class="card">
-      <div class="card-title">股價走勢</div>
-      <div class="chart-wrap">
-        <div id="chart-container"></div>
-        <div id="chart-status"></div>
-      </div>
-    </div>`;
-
-  // ── 9. Research notes ──
+  // ── 8. Research notes ──
   const notesHtml = memo.research_notes ? `
     <div class="card">
       <div class="card-title">研究筆記</div>
@@ -435,7 +381,6 @@ function initPage() {
         </div>
         ${convBadge(memo.conviction || stock.conviction)}
       </div>
-      ${statsHtml}
     </div>
     ${thesisHtml}
     ${valHtml}
@@ -444,71 +389,10 @@ function initPage() {
     ${compHtml}
     ${risksHtml}
     ${timelineHtml}
-    ${chartHtml}
     ${notesHtml}
     ${linksHtml}
   `;
 
-  renderChart(memo, currency);
-}
-
-// ── Chart ────────────────────────────────────────────────────────────────────
-let chartInstance = null;
-
-function renderChart(memo, currency) {
-  const container = document.getElementById('chart-container');
-  const statusEl  = document.getElementById('chart-status');
-  if (!container) return;
-  if (chartInstance) { chartInstance.remove(); chartInstance = null; }
-
-  const data = memo.chart_data;
-  if (!data || !data.length) {
-    const mkt = memo.mkt || (STOCKS.watching || []).find(s => s.ticker === TICKER)?.mkt || '';
-    const yTicker = mkt === 'TWSE' ? TICKER + '.TW' : mkt === 'HKEX' ? TICKER + '.HK' : TICKER;
-    const period2 = Math.floor(Date.now() / 1000);
-    const period1 = period2 - 365 * 24 * 3600;
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yTicker}?interval=1d&period1=${period1}&period2=${period2}`;
-    statusEl.textContent = '正在從 Yahoo Finance 載入 K 線…';
-    fetch(url)
-      .then(r => r.json())
-      .then(json => {
-        const result = json.chart?.result?.[0];
-        if (!result) throw new Error('no result');
-        const ts = result.timestamp;
-        const q  = result.indicators.quote[0];
-        const candles = ts.map((t, i) => ({
-          time: t,
-          open: q.open[i], high: q.high[i], low: q.low[i], close: q.close[i]
-        })).filter(c => c.open && c.high && c.low && c.close);
-        memo.chart_data = candles;
-        drawChart(container, candles);
-        statusEl.textContent = `Yahoo Finance 即時K線（${yTicker}）`;
-      })
-      .catch(() => {
-        container.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:14px">無法載入K線</div>';
-        statusEl.textContent = '';
-      });
-    return;
-  }
-  drawChart(container, data);
-  statusEl.textContent = `K線資料：${data.length} 個交易日`;
-}
-
-function drawChart(container, data) {
-  chartInstance = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: 320,
-    layout: { background: { color: '#f8fafc' }, textColor: '#475569' },
-    grid: { vertLines: { color: '#f1f5f9' }, horzLines: { color: '#f1f5f9' } },
-    timeScale: { borderColor: '#e2e8f0', timeVisible: true }
-  });
-  const series = chartInstance.addCandlestickSeries({
-    upColor: '#16a34a', downColor: '#dc2626',
-    borderUpColor: '#16a34a', borderDownColor: '#dc2626',
-    wickUpColor: '#16a34a', wickDownColor: '#dc2626'
-  });
-  series.setData(data);
-  chartInstance.timeScale().fitContent();
 }
 </script>
 </body>
