@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>個股研究</title>
+<script src="data/stocks.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; color: #0f172a; font-size: 16px; }
+
+/* Top bar */
+.topbar { position: sticky; top: 0; z-index: 50; background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
+.back-btn { display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 14px; cursor: pointer; padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 6px; text-decoration: none; }
+.back-btn:hover { background: #f8fafc; color: #0f172a; }
+.topbar-title { font-size: 17px; font-weight: 600; color: #0f172a; }
+.topbar-sub { font-size: 13px; color: #94a3b8; margin-left: auto; }
+
+/* Container */
+.container { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+/* Hero card */
+.hero { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.hero-name { font-size: 26px; font-weight: 700; color: #0f172a; }
+.hero-sub { font-size: 14px; color: #64748b; margin-top: 4px; }
+.conv-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.conv-high   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.conv-medium { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+.conv-low    { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+
+/* Stats row */
+.stats-row { display: flex; gap: 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.stat-cell { flex: 1; padding: 12px 16px; border-right: 1px solid #e2e8f0; text-align: center; }
+.stat-cell:last-child { border-right: none; }
+.stat-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 700; color: #0f172a; }
+.stat-value.up-hot  { color: #dc2626; }
+.stat-value.up-warm { color: #d97706; }
+.stat-value.up-cool { color: #16a34a; }
+.stat-null { color: #94a3b8; font-size: 16px; }
+
+/* Section card */
+.card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
+
+/* Thesis */
+.thesis-box { background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 15px; color: #0369a1; line-height: 1.75; }
+
+/* Valuation */
+.val-scenarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.val-box { border-radius: 8px; padding: 14px; text-align: center; }
+.val-box.bear { background: #fef2f2; border: 1px solid #fca5a5; }
+.val-box.base { background: #f0fdf4; border: 1px solid #86efac; }
+.val-box.bull { background: #eff6ff; border: 1px solid #bfdbfe; }
+.val-scenario-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.val-box.bear .val-scenario-label { color: #dc2626; }
+.val-box.base .val-scenario-label { color: #15803d; }
+.val-box.bull .val-scenario-label { color: #1d4ed8; }
+.val-price { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+.val-upside { font-size: 13px; color: #64748b; }
+.val-notes { font-size: 14px; color: #475569; line-height: 1.7; background: #f8fafc; border-radius: 6px; padding: 10px 14px; }
+
+/* Financials */
+.fin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.fin-table th { background: #f8fafc; color: #64748b; padding: 7px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.fin-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+.fin-table tr:last-child td { border-bottom: none; }
+.fin-table tr:hover td { background: #f8fafc; }
+
+/* Competitors */
+.comp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.comp-table th { background: #f8fafc; color: #64748b; padding: 7px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.comp-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+.comp-table tr:last-child td { border-bottom: none; }
+.comp-highlight td { background: #f0f9ff; font-weight: 600; }
+
+/* Risks */
+.risk-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; line-height: 1.6; }
+.risk-item:last-child { border-bottom: none; }
+.risk-num { color: #fca5a5; font-weight: 700; font-size: 13px; flex-shrink: 0; padding-top: 1px; }
+.risk-text { color: #374151; }
+
+/* Timeline */
+.tl-item { display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
+.tl-item:last-child { border-bottom: none; }
+.tl-date { color: #0ea5e9; font-weight: 600; font-size: 13px; white-space: nowrap; padding-top: 2px; min-width: 80px; }
+.tl-event { font-size: 14px; color: #374151; line-height: 1.6; }
+
+/* Chart */
+.chart-wrap { margin-bottom: 0; }
+#chart-container { height: 320px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; }
+#chart-status { font-size: 13px; color: #94a3b8; margin-top: 6px; text-align: right; }
+
+/* Research notes */
+.notes-box { background: #faf5ff; border-left: 3px solid #a855f7; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; color: #374151; line-height: 1.8; }
+
+/* Links */
+.link-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f3f4f6; }
+.link-item:last-child { border-bottom: none; }
+.link-type { font-size: 12px; font-weight: 600; border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+.lt-report  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.lt-filing  { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+.lt-news    { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.lt-other   { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+.link-title { font-size: 14px; color: #0ea5e9; text-decoration: none; }
+.link-title:hover { text-decoration: underline; }
+
+/* UG metrics grid */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.metric-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; }
+.metric-label { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+.metric-value { font-size: 18px; font-weight: 700; color: #0f172a; }
+.metric-note  { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+/* Loading / error */
+.loading { text-align: center; padding: 60px; color: #94a3b8; font-size: 15px; }
+
+@media (max-width: 600px) {
+  .stats-row { flex-wrap: wrap; }
+  .stat-cell { min-width: 50%; }
+  .val-scenarios { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <a class="back-btn" href="index.html">← 返回清單</a>
+  <span class="topbar-title" id="topbar-title">個股研究</span>
+  <span class="topbar-sub" id="topbar-sub"></span>
+</div>
+
+<div class="container" id="main">
+  <div class="loading">載入中…</div>
+</div>
+
+<script>
+// ── Boot: resolve ticker from URL ────────────────────────────────────────────
+const params  = new URLSearchParams(window.location.search);
+const TICKER  = params.get('ticker') || '';
+
+if (!TICKER) {
+  document.getElementById('main').innerHTML = '<div class="loading" style="color:#dc2626">未指定標的（?ticker=XXX）</div>';
+} else {
+  const s = document.createElement('script');
+  s.src = `data/memos/${TICKER}.js`;
+  s.onload  = initPage;
+  s.onerror = () => {
+    document.getElementById('main').innerHTML =
+      `<div class="loading" style="color:#dc2626">找不到研究備忘：${TICKER}</div>`;
+  };
+  document.head.appendChild(s);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmtPrice(p, currency) {
+  if (p == null) return '<span class="stat-null">—</span>';
+  const sym = { TWD: 'NT$', USD: '$', HKD: 'HK$' }[currency] || '';
+  return sym + p.toLocaleString();
+}
+
+function upsideClass(pct) {
+  if (pct == null) return '';
+  if (pct >= 50) return 'up-hot';
+  if (pct >= 20) return 'up-warm';
+  return 'up-cool';
+}
+
+function convBadge(c) {
+  const m = { high: ['conv-high','高信念'], medium: ['conv-medium','中信念'], low: ['conv-low','低信念'] };
+  const [cls, lbl] = m[c] || ['conv-low', c];
+  return `<span class="conv-badge ${cls}">${lbl}</span>`;
+}
+
+function linkTypeBadge(t) {
+  const m = { report:'lt-report', filing:'lt-filing', news:'lt-news' };
+  const lbl = { report:'研究報告', filing:'申報文件', news:'新聞', other:'其他' };
+  return `<span class="link-type ${m[t]||'lt-other'}">${lbl[t]||t}</span>`;
+}
+
+// ── Main render ──────────────────────────────────────────────────────────────
+function initPage() {
+  const varName = 'MEMO_' + TICKER;
+  const memo = window[varName];
+  if (!memo) {
+    document.getElementById('main').innerHTML =
+      `<div class="loading" style="color:#dc2626">變數 ${varName} 未定義</div>`;
+    return;
+  }
+
+  // Find matching stock entry for live price data
+  const stock = (STOCKS.watching || []).find(s => s.ticker === TICKER) || {};
+  const currency = stock.currency || 'TWD';
+
+  // Update topbar
+  document.title = `${TICKER} ${memo.name} — 個股研究`;
+  document.getElementById('topbar-title').textContent = `${TICKER}  ${memo.name}`;
+  document.getElementById('topbar-sub').textContent = memo.header || '';
+
+  // ── Hero ──
+  const upside = stock.upside_pct;
+  const uCls   = upsideClass(upside);
+
+  const statsHtml = `
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-label">現價</div>
+        <div class="stat-value">${fmtPrice(stock.price, currency)}</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">目標價</div>
+        <div class="stat-value">${fmtPrice(stock.target, currency)}</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">上檔空間</div>
+        <div class="stat-value ${uCls}">${upside != null ? '+' + upside.toFixed(1) + '%' : '<span class="stat-null">—</span>'}</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">本益比</div>
+        <div class="stat-value">${stock.pe != null ? stock.pe + 'x' : '<span class="stat-null">—</span>'}</div>
+      </div>
+    </div>`;
+
+  // ── 1. Thesis ──
+  const thesisHtml = `
+    <div class="card">
+      <div class="card-title">投資論點</div>
+      <div class="thesis-box">${memo.thesis || '—'}</div>
+    </div>`;
+
+  // ── 2. Valuation ──
+  let valHtml = '';
+  if (memo.valuation) {
+    const v = memo.valuation;
+    const priceBase = stock.price;
+    function upPct(target) {
+      if (!target || !priceBase) return '';
+      const pct = ((target - priceBase) / priceBase * 100).toFixed(1);
+      return `<div class="val-upside">${pct >= 0 ? '+' : ''}${pct}% vs 現價</div>`;
+    }
+    valHtml = `
+      <div class="card">
+        <div class="card-title">估值計算（${v.method || 'PE 法'}）</div>
+        <div class="val-scenarios">
+          <div class="val-box bear">
+            <div class="val-scenario-label">悲觀</div>
+            <div class="val-price">${v.bear ? fmtPrice(v.bear, currency) : '—'}</div>
+            ${upPct(v.bear)}
+          </div>
+          <div class="val-box base">
+            <div class="val-scenario-label">基本</div>
+            <div class="val-price">${v.base ? fmtPrice(v.base, currency) : '—'}</div>
+            ${upPct(v.base)}
+          </div>
+          <div class="val-box bull">
+            <div class="val-scenario-label">樂觀</div>
+            <div class="val-price">${v.bull ? fmtPrice(v.bull, currency) : '—'}</div>
+            ${upPct(v.bull)}
+          </div>
+        </div>
+        ${v.notes ? `<div class="val-notes">${v.notes}</div>` : ''}
+      </div>`;
+  }
+
+  // ── 3. Financials ──
+  const finRows = (memo.financials || []).map(f =>
+    `<tr><td>${f.period}</td><td>${f.rev}</td><td>${f.rev_yoy}</td><td>${f.eps}</td><td style="color:#94a3b8;font-size:13px">${f.note || ''}</td></tr>`
+  ).join('');
+  const finHtml = `
+    <div class="card">
+      <div class="card-title">財務摘要</div>
+      <div style="overflow-x:auto">
+        <table class="fin-table">
+          <thead><tr><th>期間</th><th>營收</th><th>YoY</th><th>EPS</th><th>備註</th></tr></thead>
+          <tbody>${finRows || '<tr><td colspan="5" style="color:#94a3b8;text-align:center">暫無資料</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // ── 4. UG metrics (optional, company-specific) ──
+  let ugHtml = '';
+  if (memo.ug_metrics) {
+    const ug = memo.ug_metrics;
+    ugHtml = `
+      <div class="card">
+        <div class="card-title">UG 關鍵指標</div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">台灣門市數</div>
+            <div class="metric-value">${ug.stores_tw} 家</div>
+            <div class="metric-note">目標年底 ${ug.target_2025_end} 家</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">加盟金</div>
+            <div class="metric-value">NT$${ug.franchise_fee_per_store}萬/家</div>
+            <div class="metric-note">高毛利一次性收入</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">加盟金隱含EPS</div>
+            <div class="metric-value" style="color:#dc2626">${ug.implied_eps_from_ff}元</div>
+            <div class="metric-note">35間×550萬（凱基估算）</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">日均銷售</div>
+            <div class="metric-value">${ug.avg_daily_cups}+杯</div>
+            <div class="metric-note">忠孝敦化店王</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Sharetea 美國</div>
+            <div class="metric-value">${memo.sharetea?.us_stores || '—'}家</div>
+            <div class="metric-note">${memo.sharetea?.us_interest || ''}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">海外佈局</div>
+            <div class="metric-value" style="font-size:13px;line-height:1.5">${(ug.overseas_pipeline||[]).join('、') || '—'}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── 5. Competitors ──
+  let compHtml = '';
+  if (memo.competitors && memo.competitors.length) {
+    const rows = memo.competitors.map(c => {
+      const isThis = c.ticker === TICKER;
+      return `<tr class="${isThis ? 'comp-highlight' : ''}">
+        <td>${isThis ? '▶ ' : ''}${c.name}</td>
+        <td>${c.ticker || '—'}</td>
+        <td>${c.market || '—'}</td>
+        <td>${c.stores != null ? c.stores.toLocaleString() : '—'}</td>
+        <td>${c.pe != null ? c.pe + 'x' : '—'}</td>
+        <td style="color:#64748b;font-size:13px">${c.note || ''}</td>
+      </tr>`;
+    }).join('');
+    compHtml = `
+      <div class="card">
+        <div class="card-title">競爭對手比較</div>
+        <div style="overflow-x:auto">
+          <table class="comp-table">
+            <thead><tr><th>公司</th><th>代碼</th><th>市場</th><th>門市數</th><th>PE</th><th>備註</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  } else if (memo.competitors_reference && memo.competitors_reference.length) {
+    // Fallback to old format
+    const rows = memo.competitors_reference.map(c =>
+      `<tr><td>${c.name}</td><td>—</td><td>中國</td><td>${c.stores.toLocaleString()}</td><td>—</td><td></td></tr>`
+    ).join('');
+    compHtml = `
+      <div class="card">
+        <div class="card-title">競爭對手比較</div>
+        <div style="overflow-x:auto">
+          <table class="comp-table">
+            <thead><tr><th>公司</th><th>代碼</th><th>市場</th><th>門市數</th><th>PE</th><th>備註</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  // ── 6. Risks ──
+  const riskItems = (memo.risks || []).map((r, i) =>
+    `<div class="risk-item"><span class="risk-num">R${i+1}</span><span class="risk-text">${r}</span></div>`
+  ).join('');
+  const risksHtml = `
+    <div class="card">
+      <div class="card-title">主要風險</div>
+      ${riskItems || '<div style="color:#94a3b8;font-size:14px">暫無資料</div>'}
+    </div>`;
+
+  // ── 7. Timeline ──
+  const tlItems = (memo.timeline || []).map(t =>
+    `<div class="tl-item"><span class="tl-date">${t.date}</span><span class="tl-event">${t.event}</span></div>`
+  ).join('');
+  const timelineHtml = `
+    <div class="card">
+      <div class="card-title">事件時間軸</div>
+      ${tlItems || '<div style="color:#94a3b8;font-size:14px">暫無資料</div>'}
+    </div>`;
+
+  // ── 8. Chart ──
+  const chartHtml = `
+    <div class="card">
+      <div class="card-title">股價走勢</div>
+      <div class="chart-wrap">
+        <div id="chart-container"></div>
+        <div id="chart-status"></div>
+      </div>
+    </div>`;
+
+  // ── 9. Research notes ──
+  const notesHtml = memo.research_notes ? `
+    <div class="card">
+      <div class="card-title">研究筆記</div>
+      <div class="notes-box">${memo.research_notes}</div>
+    </div>` : '';
+
+  // ── 10. Links ──
+  let linksHtml = '';
+  if (memo.links && memo.links.length) {
+    const items = memo.links.map(l =>
+      `<div class="link-item">
+        ${linkTypeBadge(l.type)}
+        <a class="link-title" href="${l.url}" target="_blank">${l.title}</a>
+      </div>`
+    ).join('');
+    linksHtml = `
+      <div class="card">
+        <div class="card-title">原始資料</div>
+        ${items}
+      </div>`;
+  } else if (memo.notion_url) {
+    linksHtml = `
+      <div class="card">
+        <div class="card-title">原始資料</div>
+        <div class="link-item">
+          ${linkTypeBadge('other')}
+          <a class="link-title" href="${memo.notion_url}" target="_blank">Notion 研究頁</a>
+        </div>
+      </div>`;
+  }
+
+  // ── Assemble ──
+  document.getElementById('main').innerHTML = `
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="hero-name">${memo.ticker}　${memo.name}</div>
+          <div class="hero-sub">${memo.header || ''}</div>
+        </div>
+        ${convBadge(memo.conviction || stock.conviction)}
+      </div>
+      ${statsHtml}
+    </div>
+    ${thesisHtml}
+    ${valHtml}
+    ${finHtml}
+    ${ugHtml}
+    ${compHtml}
+    ${risksHtml}
+    ${timelineHtml}
+    ${chartHtml}
+    ${notesHtml}
+    ${linksHtml}
+  `;
+
+  renderChart(memo, currency);
+}
+
+// ── Chart ────────────────────────────────────────────────────────────────────
+let chartInstance = null;
+
+function renderChart(memo, currency) {
+  const container = document.getElementById('chart-container');
+  const statusEl  = document.getElementById('chart-status');
+  if (!container) return;
+  if (chartInstance) { chartInstance.remove(); chartInstance = null; }
+
+  const data = memo.chart_data;
+  if (!data || !data.length) {
+    const mkt = memo.mkt || (STOCKS.watching || []).find(s => s.ticker === TICKER)?.mkt || '';
+    const yTicker = mkt === 'TWSE' ? TICKER + '.TW' : mkt === 'HKEX' ? TICKER + '.HK' : TICKER;
+    const period2 = Math.floor(Date.now() / 1000);
+    const period1 = period2 - 365 * 24 * 3600;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yTicker}?interval=1d&period1=${period1}&period2=${period2}`;
+    statusEl.textContent = '正在從 Yahoo Finance 載入 K 線…';
+    fetch(url)
+      .then(r => r.json())
+      .then(json => {
+        const result = json.chart?.result?.[0];
+        if (!result) throw new Error('no result');
+        const ts = result.timestamp;
+        const q  = result.indicators.quote[0];
+        const candles = ts.map((t, i) => ({
+          time: t,
+          open: q.open[i], high: q.high[i], low: q.low[i], close: q.close[i]
+        })).filter(c => c.open && c.high && c.low && c.close);
+        memo.chart_data = candles;
+        drawChart(container, candles);
+        statusEl.textContent = `Yahoo Finance 即時K線（${yTicker}）`;
+      })
+      .catch(() => {
+        container.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:14px">無法載入K線</div>';
+        statusEl.textContent = '';
+      });
+    return;
+  }
+  drawChart(container, data);
+  statusEl.textContent = `K線資料：${data.length} 個交易日`;
+}
+
+function drawChart(container, data) {
+  chartInstance = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: 320,
+    layout: { background: { color: '#f8fafc' }, textColor: '#475569' },
+    grid: { vertLines: { color: '#f1f5f9' }, horzLines: { color: '#f1f5f9' } },
+    timeScale: { borderColor: '#e2e8f0', timeVisible: true }
+  });
+  const series = chartInstance.addCandlestickSeries({
+    upColor: '#16a34a', downColor: '#dc2626',
+    borderUpColor: '#16a34a', borderDownColor: '#dc2626',
+    wickUpColor: '#16a34a', wickDownColor: '#dc2626'
+  });
+  series.setData(data);
+  chartInstance.timeScale().fitContent();
+}
+</script>
+</body>
+</html>

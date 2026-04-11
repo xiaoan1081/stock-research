@@ -5,16 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>個股研究追蹤表</title>
 <script src="data/stocks.js"></script>
-<script src="data/memos/2756.js"></script>
-<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* Chart */
-.chart-wrap { margin-bottom: 16px; }
-.chart-title { font-size: 14px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-#chart-container { height: 300px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #f8fafc; position: relative; }
-#chart-status { font-size: 14px; color: #94a3b8; margin-top: 4px; text-align: center; }
 
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; color: #0f172a; font-size: 18px; }
 .container { max-width: 1500px; margin: 0 auto; padding: 20px; }
@@ -52,10 +44,14 @@ tr.clickable:hover td { background: #e0f2fe; }
 .conv-medium { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; border-radius: 4px; padding: 2px 7px; font-size: 14px; font-weight: 600; white-space: nowrap; }
 .conv-low    { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 7px; font-size: 14px; font-weight: 600; white-space: nowrap; }
 
-/* Status badges */
-.st-watching { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; border-radius: 4px; padding: 2px 7px; font-size: 14px; font-weight: 600; }
-.st-holding  { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; border-radius: 4px; padding: 2px 7px; font-size: 14px; font-weight: 600; }
-.st-sold     { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 4px; padding: 2px 7px; font-size: 14px; font-weight: 600; }
+/* Search */
+.search-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.search-input { flex: 1; max-width: 360px; padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 15px; color: #0f172a; background: #ffffff; outline: none; }
+.search-input:focus { border-color: #0ea5e9; box-shadow: 0 0 0 2px #e0f2fe; }
+.search-count { font-size: 14px; color: #94a3b8; }
+
+/* Market section header */
+.mkt-header { font-size: 14px; font-weight: 700; color: #ffffff; background: #475569; padding: 5px 12px; letter-spacing: 0.05em; }
 
 /* Upside color */
 .up-hot  { color: #dc2626; font-weight: 700; }
@@ -73,35 +69,6 @@ tr.clickable:hover td { background: #e0f2fe; }
 /* Note cell */
 .note-cell { font-size: 14px; color: #64748b; max-width: 300px; line-height: 1.4; }
 
-/* Memo modal */
-.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-.modal-bg.open { display: flex; }
-.modal { background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px; width: 760px; max-width: 95vw; max-height: 88vh; overflow-y: auto; padding: 24px; position: relative; }
-.modal-close { position: absolute; top: 14px; right: 18px; color: #9ca3af; cursor: pointer; font-size: 26px; line-height: 1; }
-.modal-close:hover { color: #1e293b; }
-.modal h2 { color: #0ea5e9; font-size: 21px; margin-bottom: 4px; }
-.modal-header-note { color: #6b7280; font-size: 16px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb; }
-.modal-section { margin-bottom: 16px; }
-.modal-section h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 8px; font-weight: 700; }
-.modal-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; font-size: 16px; color: #374151; line-height: 1.7; }
-.thesis-box { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 12px 14px; font-size: 16px; color: #0369a1; line-height: 1.7; }
-
-/* Financials table inside modal */
-.fin-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-.fin-table th { background: #f8fafc; color: #64748b; padding: 5px 8px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px; text-transform: uppercase; }
-.fin-table td { padding: 5px 8px; border-bottom: 1px solid #f3f4f6; color: #374151; }
-.fin-table tr:last-child td { border-bottom: none; }
-
-/* Risks */
-.risk-item { padding: 6px 0 6px 14px; border-left: 3px solid #fca5a5; margin-bottom: 6px; font-size: 15px; color: #374151; line-height: 1.5; }
-
-/* Timeline */
-.timeline-item { padding: 6px 0 6px 12px; border-left: 2px solid #e2e8f0; margin-left: 6px; margin-bottom: 4px; font-size: 15px; }
-.timeline-date { color: #0ea5e9; font-weight: 600; margin-bottom: 2px; }
-.timeline-event { color: #475569; line-height: 1.5; }
-
-/* Research notes */
-.research-box { background: #faf5ff; border-left: 3px solid #0ea5e9; border-radius: 0 6px 6px 0; padding: 12px 16px; font-size: 15px; color: #374151; line-height: 1.7; }
 
 /* Log */
 .log-table td:first-child { color: #94a3b8; white-space: nowrap; font-size: 15px; width: 100px; }
@@ -126,8 +93,6 @@ tr.clickable:hover td { background: #e0f2fe; }
 .metric-value { font-size: 18px; font-weight: 700; color: #0f172a; }
 .metric-note  { font-size: 12px; color: #64748b; margin-top: 2px; }
 
-/* Closed section */
-.closed-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 10px; color: #64748b; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -145,7 +110,6 @@ tr.clickable:hover td { background: #e0f2fe; }
   <!-- Nav Tabs -->
   <div class="nav">
     <div class="nav-tab active" onclick="showTab('watching')">🔵 觀察清單</div>
-    <div class="nav-tab" onclick="showTab('closed')">⬛ 已出場</div>
     <div class="nav-tab" onclick="showTab('log')">📅 更新日誌</div>
     <div class="nav-tab" onclick="showTab('principles')">📖 研究原則</div>
   </div>
@@ -153,36 +117,11 @@ tr.clickable:hover td { background: #e0f2fe; }
   <!-- Tab: Watching -->
   <div id="tab-watching" class="tab-content active">
     <div class="section">
-      <div class="section-title">🇹🇼 台股 / 🇺🇸 美股 / 🇭🇰 港股 ── 點擊任一列查看研究備忘</div>
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>標的</th>
-              <th>產業</th>
-              <th>現價</th>
-              <th>目標價</th>
-              <th>上檔空間</th>
-              <th>PE</th>
-              <th>狀態</th>
-              <th>信念強度</th>
-              <th>下一催化劑</th>
-              <th>備註</th>
-            </tr>
-          </thead>
-          <tbody id="watching-body"></tbody>
-        </table>
+      <div class="search-bar">
+        <input class="search-input" id="search-input" type="text" placeholder="搜尋標的、名稱、產業、備註…" oninput="renderWatching()">
+        <span class="search-count" id="search-count"></span>
       </div>
-    </div>
-  </div>
-
-  <!-- Tab: Closed -->
-  <div id="tab-closed" class="tab-content">
-    <div class="section">
-      <div class="section-title">⬛ 已出場紀錄</div>
-      <div id="closed-box">
-        <div class="closed-card">尚無已出場標的。</div>
-      </div>
+      <div id="watching-sections"></div>
     </div>
   </div>
 
@@ -226,19 +165,10 @@ tr.clickable:hover td { background: #e0f2fe; }
     </div>
   </div>
 
-  <!-- Memo Modal -->
-  <div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
-    <div class="modal" id="modal-body"></div>
-  </div>
 
 </div>
 
 <script>
-// ── Memos registry ──────────────────────────────────────────────────────────
-const MEMOS = {
-  "2756": typeof MEMO_2756 !== 'undefined' ? MEMO_2756 : null
-};
-
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function fmtPrice(p, currency) {
   if (p == null) return '<span style="color:#94a3b8">待更新</span>';
@@ -259,12 +189,6 @@ function convBadge(c) {
   return `<span class="${cls}">${lbl}</span>`;
 }
 
-function statusBadge(s) {
-  const m = { watching: ['st-watching', '觀察中'], holding: ['st-holding', '持有中'], sold: ['st-sold', '已出場'] };
-  const [cls, lbl] = m[s] || ['st-watching', s];
-  return `<span class="${cls}">${lbl}</span>`;
-}
-
 // ── Tab switching ────────────────────────────────────────────────────────────
 function showTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -282,27 +206,77 @@ function renderMeta() {
 }
 
 // ── Render watching table ────────────────────────────────────────────────────
+const MKT_GROUPS = [
+  { key: 'TWSE',   label: '🇹🇼 台股 (TWSE)' },
+  { key: 'US',     label: '🇺🇸 美股 (NYSE / NASDAQ)',  match: m => !['TWSE','HKEX'].includes(m) },
+  { key: 'HKEX',  label: '🇭🇰 港股 (HKEX)' },
+];
+
+function matchMkt(s, key) {
+  if (key === 'US') return !['TWSE','HKEX'].includes(s.mkt);
+  return s.mkt === key;
+}
+
 function renderWatching() {
-  const tbody = document.getElementById('watching-body');
-  if (!STOCKS.watching.length) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#94a3b8;padding:20px">尚無觀察標的</td></tr>';
-    return;
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+  const container = document.getElementById('watching-sections');
+
+  const cols = `<thead><tr>
+    <th>標的</th><th>產業</th><th>現價</th><th>目標價</th>
+    <th>上檔空間</th><th>PE</th><th>信念強度</th><th>下一催化劑</th><th>備註</th>
+  </tr></thead>`;
+
+  let totalShown = 0;
+  let html = '';
+
+  for (const grp of MKT_GROUPS) {
+    let stocks = STOCKS.watching.filter(s => matchMkt(s, grp.key));
+    if (!stocks.length) continue;
+
+    if (q) {
+      stocks = stocks.filter(s =>
+        [s.ticker, s.name, s.sector, s.note, ...(s.catalysts||[]).map(c=>c.event)]
+          .join(' ').toLowerCase().includes(q)
+      );
+    }
+    if (!stocks.length) continue;
+
+    totalShown += stocks.length;
+    const rows = stocks.map(s => {
+      const cats = (s.catalysts||[]).map(c => `<span class="cat-tag">${c.event}</span>`).join('<br>');
+      return `<tr class="clickable" onclick="location.href='stock.html?ticker=${s.ticker}'">
+        <td><span class="ticker">${s.ticker}</span><span class="mkt-tag">${s.name}</span></td>
+        <td style="font-size:15px;color:#475569">${s.sector}</td>
+        <td>${fmtPrice(s.price, s.currency)}</td>
+        <td>${fmtPrice(s.target, s.currency)}</td>
+        <td>${fmtUpside(s.upside_pct)}</td>
+        <td style="color:#64748b">${s.pe != null ? s.pe + 'x' : '—'}</td>
+        <td>${convBadge(s.conviction)}</td>
+        <td style="font-size:14px">${cats || '—'}</td>
+        <td class="note-cell">${s.note}</td>
+      </tr>`;
+    }).join('');
+
+    html += `
+      <div style="margin-bottom:20px">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th colspan="9" class="mkt-header">${grp.label}</th></tr></thead>
+            ${cols}
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
   }
-  tbody.innerHTML = STOCKS.watching.map(s => {
-    const cats = s.catalysts.map(c => `<span class="cat-tag">${c.event}</span>`).join('<br>');
-    return `<tr class="clickable" onclick="openMemo('${s.ticker}')">
-      <td><span class="ticker">${s.ticker}</span><span class="mkt-tag">${s.name} · ${s.mkt}</span></td>
-      <td style="font-size:15px;color:#475569">${s.sector}</td>
-      <td>${fmtPrice(s.price, s.currency)}</td>
-      <td>${fmtPrice(s.target, s.currency)}</td>
-      <td>${fmtUpside(s.upside_pct)}</td>
-      <td style="color:#64748b">${s.pe != null ? s.pe + 'x' : '—'}</td>
-      <td>${statusBadge(s.status)}</td>
-      <td>${convBadge(s.conviction)}</td>
-      <td style="font-size:14px">${cats || '—'}</td>
-      <td class="note-cell">${s.note}</td>
-    </tr>`;
-  }).join('');
+
+  if (!totalShown) {
+    html = '<div style="text-align:center;color:#94a3b8;padding:32px;font-size:15px">無符合條件的標的</div>';
+  }
+
+  container.innerHTML = html;
+  const total = STOCKS.watching.length;
+  document.getElementById('search-count').textContent =
+    q ? `顯示 ${totalShown} / ${total} 筆` : `共 ${total} 筆`;
 }
 
 // ── Render log ───────────────────────────────────────────────────────────────
@@ -323,206 +297,13 @@ function renderLog() {
     });
 }
 
-// ── Memo Modal ───────────────────────────────────────────────────────────────
-let chartInstance = null;
-
-function openMemo(ticker) {
-  const memo = MEMOS[ticker];
-  if (!memo) { alert('尚無備忘：' + ticker); return; }
-
-  // Build financial table
-  const finRows = (memo.financials || []).map(f =>
-    `<tr><td>${f.period}</td><td>${f.rev}</td><td>${f.rev_yoy}</td><td>${f.eps}</td><td style="color:#94a3b8">${f.note}</td></tr>`
-  ).join('');
-
-  // UG metrics
-  const ug = memo.ug_metrics;
-  const ugSection = ug ? `
-    <div class="modal-section">
-      <h3>UG 關鍵指標</h3>
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">台灣門市數</div>
-          <div class="metric-value">${ug.stores_tw} 家</div>
-          <div class="metric-note">目標年底 ${ug.target_2025_end} 家</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">加盟金</div>
-          <div class="metric-value">${ug.franchise_fee_per_store}萬/家</div>
-          <div class="metric-note">高毛利一次性收入</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">加盟金隱含EPS</div>
-          <div class="metric-value" style="color:#dc2626">${ug.implied_eps_from_ff}元</div>
-          <div class="metric-note">35間×550萬（凱基估算）</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">日均銷售</div>
-          <div class="metric-value">${ug.avg_daily_cups}+杯</div>
-          <div class="metric-note">忠孝敦化店王</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Sharetea 美國</div>
-          <div class="metric-value">${memo.sharetea?.us_stores}家</div>
-          <div class="metric-note">30位加盟主表態引進UG</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">海外首店準備中</div>
-          <div class="metric-value" style="font-size:13px;line-height:1.4">${ug.overseas_pipeline.join('、')}</div>
-          <div class="metric-note"> </div>
-        </div>
-      </div>
-    </div>` : '';
-
-  // Risks
-  const riskItems = (memo.risks || []).map(r => `<div class="risk-item">${r}</div>`).join('');
-
-  // Timeline
-  const tlItems = (memo.timeline || []).map(t =>
-    `<div class="timeline-item"><div class="timeline-date">${t.date}</div><div class="timeline-event">${t.event}</div></div>`
-  ).join('');
-
-  // Balance sheet
-  const bs = memo.balance_sheet;
-  const bsSection = bs ? `
-    <div class="modal-section">
-      <h3>資產負債表摘要（${bs.date}）</h3>
-      <div class="modal-box">
-        現金合計：${bs.cash_total}<br>
-        金融投資：${bs.investments}<br>
-        稅務：${bs.tax_issue}
-      </div>
-    </div>` : '';
-
-  // Notion link
-  const notionLink = memo.notion_url
-    ? `<a href="${memo.notion_url}" target="_blank" style="font-size:14px;color:#0ea5e9">→ 開啟 Notion 研究頁</a>`
-    : '';
-
-  document.getElementById('modal-body').innerHTML = `
-    <span class="modal-close" onclick="closeModal()">×</span>
-    <h2>${memo.ticker} ${memo.name}</h2>
-    <div class="modal-header-note">${memo.header} ${notionLink}</div>
-
-    <div class="modal-section">
-      <h3>投資論點</h3>
-      <div class="thesis-box">${memo.thesis}</div>
-    </div>
-
-    <div class="chart-wrap">
-      <div class="chart-title">股價走勢</div>
-      <div id="chart-container"></div>
-      <div id="chart-status"></div>
-    </div>
-
-    <div class="modal-section">
-      <h3>財務摘要</h3>
-      <div class="tbl-wrap">
-        <table class="fin-table">
-          <thead><tr><th>期間</th><th>營收</th><th>YoY</th><th>EPS</th><th>備註</th></tr></thead>
-          <tbody>${finRows}</tbody>
-        </table>
-      </div>
-    </div>
-
-    ${ugSection}
-    ${bsSection}
-
-    <div class="modal-section">
-      <h3>主要風險</h3>
-      ${riskItems}
-    </div>
-
-    <div class="modal-section">
-      <h3>事件時間軸</h3>
-      ${tlItems}
-    </div>
-
-    <div class="modal-section">
-      <h3>研究筆記</h3>
-      <div class="research-box">${memo.research_notes}</div>
-    </div>
-  `;
-
-  document.getElementById('modal-bg').classList.add('open');
-  renderChart(memo);
-}
-
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modal-bg')) return;
-  document.getElementById('modal-bg').classList.remove('open');
-  if (chartInstance) { chartInstance.remove(); chartInstance = null; }
-}
-
-// ── Chart rendering ──────────────────────────────────────────────────────────
-function renderChart(memo) {
-  const container = document.getElementById('chart-container');
-  const statusEl = document.getElementById('chart-status');
-  if (!container) return;
-
-  if (chartInstance) { chartInstance.remove(); chartInstance = null; }
-
-  const data = memo.chart_data;
-
-  if (!data || data.length === 0) {
-    // Attempt to fetch from Yahoo Finance
-    const yahooTicker = memo.mkt === 'TWSE' ? memo.ticker + '.TW' :
-                        memo.mkt === 'HKEX' ? memo.ticker + '.HK' : memo.ticker;
-    const period2 = Math.floor(Date.now() / 1000);
-    const period1 = period2 - 365 * 24 * 3600;
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooTicker}?interval=1d&period1=${period1}&period2=${period2}`;
-
-    statusEl.textContent = '正在從 Yahoo Finance 載入 K 線…';
-
-    fetch(url)
-      .then(r => r.json())
-      .then(json => {
-        const result = json.chart?.result?.[0];
-        if (!result) throw new Error('no result');
-        const ts = result.timestamp;
-        const ohlcv = result.indicators.quote[0];
-        const candles = ts.map((t, i) => ({
-          time: t,
-          open: ohlcv.open[i], high: ohlcv.high[i],
-          low: ohlcv.low[i], close: ohlcv.close[i]
-        })).filter(c => c.open && c.high && c.low && c.close);
-
-        memo.chart_data = candles;
-        drawChart(container, candles);
-        statusEl.textContent = `Yahoo Finance 即時K線（${yahooTicker}）`;
-      })
-      .catch(() => {
-        container.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:15px">無法載入K線（請確認網路或手動填入 chart_data）</div>';
-        statusEl.textContent = '';
-      });
-    return;
-  }
-
-  drawChart(container, data);
-  statusEl.textContent = `K線資料：${data.length} 個交易日`;
-}
-
-function drawChart(container, data) {
-  chartInstance = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: 300,
-    layout: { background: { color: '#f8fafc' }, textColor: '#475569' },
-    grid: { vertLines: { color: '#f1f5f9' }, horzLines: { color: '#f1f5f9' } },
-    timeScale: { borderColor: '#e2e8f0', timeVisible: true }
-  });
-  const series = chartInstance.addCandlestickSeries({
-    upColor: '#16a34a', downColor: '#dc2626',
-    borderUpColor: '#16a34a', borderDownColor: '#dc2626',
-    wickUpColor: '#16a34a', wickDownColor: '#dc2626'
-  });
-  series.setData(data);
-  chartInstance.timeScale().fitContent();
-}
-
 // ── Boot ─────────────────────────────────────────────────────────────────────
 renderMeta();
 renderWatching();
 renderLog();
+
+// Keep search count updated on boot
+document.getElementById('search-count').textContent = `共 ${STOCKS.watching.length} 筆`;
 </script>
 </body>
 </html>

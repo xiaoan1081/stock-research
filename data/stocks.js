@@ -20,7 +20,6 @@ var STOCKS = {
       pe: null,
       pb: null,
       conviction: "high",
-      status: "watching",
       catalysts: [
         { event: "UG展店進度（目標年底50家）", date: null },
         { event: "Q3 2025財報", date: null }
@@ -29,6 +28,5 @@ var STOCKS = {
       first_rec: "2026/04/11"
     }
   ],
-  closed: [],
   rumors: []
 };

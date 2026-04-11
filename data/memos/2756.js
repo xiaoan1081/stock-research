@@ -39,6 +39,25 @@ var MEMO_2756 = {
     { name: "霸王茶姬", stores: 6440  },
     { name: "喜茶",     stores: 4545  }
   ],
+  competitors: [
+    { name: "聯發國際 (2756)", ticker: "2756", market: "TWSE", stores: 200,  pe: null, note: "Sharetea 全球 + UG 台灣展店" },
+    { name: "六角國際 (2732)", ticker: "2732", market: "TWSE", stores: 1200, pe: null, note: "日出茶太、Chatime；台灣最大手搖飲上市" },
+    { name: "霸王茶姬",       ticker: null,   market: "未上市",stores: 6440, pe: null, note: "中國新時尚茶飲快速崛起" },
+    { name: "Gong Cha (貢茶)",ticker: null,   market: "港股",  stores: 2000, pe: null, note: "全球連鎖，港股上市" }
+  ],
+  valuation: {
+    method: "PE 法（EPS × 目標PE）",
+    bear: null,
+    base: null,
+    bull: null,
+    notes: "凱基估算：UG 35間加盟金貢獻EPS 7.8元。若含品牌維護費及Sharetea業務，full-year EPS 預估待財報更新後填入。目標PE區間：成長型餐飲平台 20-35x。"
+  },
+  links: [
+    { title: "凱基證券研究報告（2025-05）",           url: "https://www.notion.so/2756-1f2b97d085be803ca84bc0ea407a9767", type: "report" },
+    { title: "2025 Q2 財報（2025-08-11）",            url: "https://mops.twse.com.tw/mops/web/index", type: "filing" },
+    { title: "UG 法說會 Q&A 逐字稿（2025-06-11）",   url: "https://www.notion.so/2756-1f2b97d085be803ca84bc0ea407a9767", type: "other"  },
+    { title: "Vocus 作者案例文章",                     url: "https://vocus.cc/article/688223befd897800013b012d",             type: "news"   }
+  ],
   risks: [
     "展店前期投資持續壓縮淨利率，直至規模效益顯現",
     "UG加盟進度不及預期（目標50家→實際達成率待觀察）",
