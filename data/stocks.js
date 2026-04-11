@@ -3,9 +3,9 @@
 var STOCKS = {
   meta: {
     updated: "2026/04/11",
-    close_date: "2026/04/10",
+    close_date: "2026/04/07",
     counts: { tw: 1, us: 0, hk: 0 },
-    note: "2756 聯發國際首次完整研究：雙品牌加盟模式、UG美國展店、PR風險已反映於股價。"
+    note: "股價來源改為 Fugle MarketData API。"
   },
   watching: [
     {
@@ -14,9 +14,9 @@ var STOCKS = {
       mkt: "TWSE",
       currency: "TWD",
       sector: "餐飲／茶飲",
-      price: 68.8,
+      price: 70.3,
       target: 90,
-      upside_pct: 30.8,
+      upside_pct: 28.0,
       pe: 17.5,
       pb: null,
       conviction: "high",
