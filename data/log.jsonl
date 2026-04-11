@@ -1,1 +1,2 @@
 {"date":"2026/04/11","note":"建立個股研究追蹤表。首筆標的：2756 聯發國際，資料來源 Notion 研究頁面（截至2025/08）。待更新現價。"}
+{"date":"2026-04-11","action":"skip_fetch","reason":"weekend_tw_closed","tickers":["2756.TW"],"note":"台股週六休市，不 WebFetch，price 維持 null"}
