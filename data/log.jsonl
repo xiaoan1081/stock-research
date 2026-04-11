@@ -2,3 +2,4 @@
 {"date":"2026-04-11","action":"skip_fetch","reason":"weekend_tw_closed","tickers":["2756.TW"],"note":"台股週六休市，不 WebFetch，price 維持 null"}
 {"date":"2026-04-11","action":"research_update","ticker":"2756","price":68.8,"target":90,"upside_pct":30.8,"pe":17.5,"note":"首次完整研究：UG雙品牌加盟、PR事件跌46.8%、2026E EPS4.5x20x=90"}
 {"date":"2026-04-11","action":"fugle_api_switch","ticker":"2756","price":70.3,"close_date":"2026-04-07","note":"股價來源改為FugleAPI，API key驗證成功"}
+{"date":"2026-04-11","action":"memo_update","ticker":"2756","note":"2756備忘更新至最新：2025全年EPS 3.93元(+63%)、營收11.72億(+69.6%)、UG全球55家(台50/香3/美2)、美國30家訂單、12月公關事件補充、估值更新"}
