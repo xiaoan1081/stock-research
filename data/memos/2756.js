@@ -56,7 +56,7 @@ var MEMO_2756 = {
     { name: "聯發國際 (2756)", ticker: "2756", market: "TWSE", stores: 55,   pe: 17.9, note: "Sharetea 500+全球 + UG台灣50/香港3/美國2；2025 EPS 3.93元" },
     { name: "六角國際 (2732)", ticker: "2732", market: "TWSE", stores: 1200, pe: null, note: "日出茶太、Chatime；台灣最大手搖飲上市" },
     { name: "霸王茶姬 (CHA)", ticker: "CHA",  market: "Nasdaq", stores: 6440, pe: null, note: "中國新時尚茶飲，2025年赴美IPO；現價$9.83（52週高$41.80，自高點跌76%）；全球擴張中（馬來西亞、泰國等）" },
-    { name: "Gong Cha (貢茶)",ticker: null,   market: "港股",  stores: 2000, pe: null, note: "全球連鎖，港股上市" }
+    { name: "Gong Cha (貢茶)",ticker: null,   market: "未上市", stores: 2100, pe: null, note: "TA Associates持有；探索出售（估值$20億美元，委託JPMorgan）；非IPO計畫" }
   ],
   valuation: {
     method: "PE 法（EPS × 目標PE）",
