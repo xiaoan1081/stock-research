@@ -55,7 +55,7 @@ var MEMO_2756 = {
   competitors: [
     { name: "聯發國際 (2756)", ticker: "2756", market: "TWSE", stores: 55,   pe: 17.9, note: "Sharetea 500+全球 + UG台灣50/香港3/美國2；2025 EPS 3.93元" },
     { name: "六角國際 (2732)", ticker: "2732", market: "TWSE", stores: 1200, pe: null, note: "日出茶太、Chatime；台灣最大手搖飲上市" },
-    { name: "霸王茶姬",       ticker: null,   market: "未上市",stores: 6440, pe: null, note: "中國新時尚茶飲快速崛起" },
+    { name: "霸王茶姬 (CHA)", ticker: "CHA",  market: "Nasdaq", stores: 6440, pe: null, note: "中國新時尚茶飲，2025年赴美IPO；現價$9.83（52週高$41.80，自高點跌76%）；全球擴張中（馬來西亞、泰國等）" },
     { name: "Gong Cha (貢茶)",ticker: null,   market: "港股",  stores: 2000, pe: null, note: "全球連鎖，港股上市" }
   ],
   valuation: {
@@ -79,7 +79,7 @@ var MEMO_2756 = {
     "台灣百店目標壓力：展店過快導致單店品質與加盟主獲利下滑",
     "補稅案2,502萬（申請復查中，有一次性損益風險）",
     "關稅/美元匯率影響Sharetea美國業務及UG美國成本",
-    "新時尚茶飲市場競爭激烈（霸王茶姬等中國品牌大舉海外擴張）",
+    "新時尚茶飲市場競爭激烈（霸王茶姬已赴美IPO上市[CHA]，中國品牌大舉海外擴張）",
     "展店前期投資仍可能壓縮部分季度淨利率"
   ],
   timeline: [
