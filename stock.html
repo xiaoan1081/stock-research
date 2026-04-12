@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>個股研究</title>
 <script src="data/stocks.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; color: #0f172a; font-size: 16px; }
@@ -29,7 +30,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; colo
 .conv-medium { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
 .conv-low    { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
 
-
 /* Section card */
 .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
 .card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
@@ -43,20 +43,40 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; colo
 .val-box.bear { background: #fef2f2; border: 1px solid #fca5a5; }
 .val-box.base { background: #f0fdf4; border: 1px solid #86efac; }
 .val-box.bull { background: #eff6ff; border: 1px solid #bfdbfe; }
-.val-scenario-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.val-scenario-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 .val-box.bear .val-scenario-label { color: #dc2626; }
 .val-box.base .val-scenario-label { color: #15803d; }
 .val-box.bull .val-scenario-label { color: #1d4ed8; }
-.val-price { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+.val-formula { font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+.val-price { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
 .val-upside { font-size: 13px; color: #64748b; }
+.val-scenario-note { font-size: 12px; color: #64748b; margin-top: 8px; line-height: 1.5; text-align: left; background: #f8fafc; border-radius: 4px; padding: 6px 8px; }
 .val-notes { font-size: 14px; color: #475569; line-height: 1.7; background: #f8fafc; border-radius: 6px; padding: 10px 14px; }
 
-/* Financials */
+/* Financial tabs */
+.fin-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+.fin-tab { padding: 6px 16px; font-size: 13px; font-weight: 600; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: #64748b; cursor: pointer; transition: all 0.15s; }
+.fin-tab:hover { background: #f1f5f9; color: #0f172a; }
+.fin-tab.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+.fin-tab-content { display: none; }
+.fin-tab-content.active { display: block; }
+
+/* Financials table */
 .fin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .fin-table th { background: #f8fafc; color: #64748b; padding: 7px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
 .fin-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; color: #374151; }
 .fin-table tr:last-child td { border-bottom: none; }
 .fin-table tr:hover td { background: #f8fafc; }
+.fin-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.pos { color: #15803d; font-weight: 600; }
+.neg { color: #dc2626; font-weight: 600; }
+.neu { color: #94a3b8; }
+.yr-row td { background: #f0f9ff; font-weight: 700; }
+
+/* Annual chart */
+.chart-section { margin-bottom: 20px; }
+.chart-title { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 10px; }
+.chart-wrap { position: relative; height: 180px; }
 
 /* Competitors */
 .comp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -76,7 +96,6 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f9; colo
 .tl-item:last-child { border-bottom: none; }
 .tl-date { color: #0ea5e9; font-weight: 600; font-size: 13px; white-space: nowrap; padding-top: 2px; min-width: 80px; }
 .tl-event { font-size: 14px; color: #374151; line-height: 1.6; }
-
 
 /* Research notes */
 .notes-box { background: #faf5ff; border-left: 3px solid #a855f7; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; color: #374151; line-height: 1.8; }
@@ -143,11 +162,10 @@ if (!TICKER) {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function fmtPrice(p, currency) {
-  if (p == null) return '<span class="stat-null">—</span>';
+  if (p == null) return '<span style="color:#94a3b8">—</span>';
   const sym = { TWD: 'NT$', USD: '$', HKD: 'HK$' }[currency] || '';
-  return sym + p.toLocaleString();
+  return sym + (+p).toLocaleString();
 }
-
 
 function convBadge(c) {
   const m = { high: ['conv-high','高信念'], medium: ['conv-medium','中信念'], low: ['conv-low','低信念'] };
@@ -161,6 +179,44 @@ function linkTypeBadge(t) {
   return `<span class="link-type ${m[t]||'lt-other'}">${lbl[t]||t}</span>`;
 }
 
+// Valuation helpers – bear/base/bull can be a Number or {eps, pe, price, note}
+function valPriceNum(s) {
+  if (s == null) return null;
+  return typeof s === 'number' ? s : (s.price ?? null);
+}
+function valPriceStr(s, currency) {
+  const n = valPriceNum(s);
+  return n != null ? fmtPrice(n, currency) : '—';
+}
+function valFormula(s) {
+  if (!s || typeof s === 'number') return '';
+  if (s.eps != null && s.pe != null) return `<div class="val-formula">${s.eps}E × ${s.pe}x</div>`;
+  return '';
+}
+function valScenNote(s) {
+  if (!s || typeof s === 'number') return '';
+  return s.note ? `<div class="val-scenario-note">${s.note}</div>` : '';
+}
+function upPct(s, priceBase) {
+  const n = valPriceNum(s);
+  if (n == null || !priceBase) return '';
+  const pct = ((n - priceBase) / priceBase * 100).toFixed(1);
+  const cls = pct >= 0 ? 'pos' : 'neg';
+  return `<div class="val-upside ${cls}">${pct >= 0 ? '+' : ''}${pct}% vs 現價</div>`;
+}
+
+// Monthly revenue helpers
+function fmtK(k) {
+  // display in 萬元 with 1 decimal
+  return (k / 100).toFixed(0) + '萬';
+}
+function pctStr(val) {
+  if (val == null) return '<span class="neu">—</span>';
+  const n = parseFloat(val);
+  const cls = n > 0 ? 'pos' : n < 0 ? 'neg' : 'neu';
+  return `<span class="${cls}">${n > 0 ? '+' : ''}${n.toFixed(1)}%</span>`;
+}
+
 // ── Main render ──────────────────────────────────────────────────────────────
 function initPage() {
   const varName = 'MEMO_' + TICKER;
@@ -171,84 +227,190 @@ function initPage() {
     return;
   }
 
-  // Find matching stock entry for live price data
-  const stock = (STOCKS.watching || []).find(s => s.ticker === TICKER) || {};
+  const stock    = (STOCKS.watching || []).find(s => s.ticker === TICKER) || {};
   const currency = stock.currency || 'TWD';
+  const priceBase = stock.price;
 
-  // Update topbar
   document.title = `${TICKER} ${memo.name} — 個股研究`;
   document.getElementById('topbar-title').textContent = `${TICKER}  ${memo.name}`;
   document.getElementById('topbar-sub').textContent = memo.header || '';
 
-
-  // ── 1. Thesis ──
+  // ── 1. Thesis ──────────────────────────────────────────────────────────────
   const thesisHtml = `
     <div class="card">
       <div class="card-title">投資論點</div>
       <div class="thesis-box">${memo.thesis || '—'}</div>
     </div>`;
 
-  // ── 2. Valuation ──
+  // ── 2. Valuation ───────────────────────────────────────────────────────────
   let valHtml = '';
   if (memo.valuation) {
     const v = memo.valuation;
-    const priceBase = stock.price;
-    function upPct(target) {
-      if (!target || !priceBase) return '';
-      const pct = ((target - priceBase) / priceBase * 100).toFixed(1);
-      return `<div class="val-upside">${pct >= 0 ? '+' : ''}${pct}% vs 現價</div>`;
-    }
     valHtml = `
       <div class="card">
         <div class="card-title">估值計算（${v.method || 'PE 法'}）</div>
         <div class="val-scenarios">
           <div class="val-box bear">
             <div class="val-scenario-label">悲觀</div>
-            <div class="val-price">${v.bear ? fmtPrice(v.bear, currency) : '—'}</div>
-            ${upPct(v.bear)}
+            ${valFormula(v.bear)}
+            <div class="val-price">${valPriceStr(v.bear, currency)}</div>
+            ${upPct(v.bear, priceBase)}
+            ${valScenNote(v.bear)}
           </div>
           <div class="val-box base">
             <div class="val-scenario-label">基本</div>
-            <div class="val-price">${v.base ? fmtPrice(v.base, currency) : '—'}</div>
-            ${upPct(v.base)}
+            ${valFormula(v.base)}
+            <div class="val-price">${valPriceStr(v.base, currency)}</div>
+            ${upPct(v.base, priceBase)}
+            ${valScenNote(v.base)}
           </div>
           <div class="val-box bull">
             <div class="val-scenario-label">樂觀</div>
-            <div class="val-price">${v.bull ? fmtPrice(v.bull, currency) : '—'}</div>
-            ${upPct(v.bull)}
+            ${valFormula(v.bull)}
+            <div class="val-price">${valPriceStr(v.bull, currency)}</div>
+            ${upPct(v.bull, priceBase)}
+            ${valScenNote(v.bull)}
           </div>
         </div>
         ${v.notes ? `<div class="val-notes">${v.notes}</div>` : ''}
       </div>`;
   }
 
-  // ── 3. Financials ──
+  // ── 3. Financials (tabbed) ─────────────────────────────────────────────────
   const finRows = (memo.financials || []).map(f =>
     `<tr><td>${f.period}</td><td>${f.rev}</td><td>${f.rev_yoy}</td><td>${f.eps}</td><td style="color:#94a3b8;font-size:13px">${f.note || ''}</td></tr>`
   ).join('');
+
+  // Monthly revenue tab
+  let monthlyTabHtml = '';
+  if (memo.monthly_revenue && memo.monthly_revenue.length) {
+    const mr = [...memo.monthly_revenue].sort((a, b) => b.ym.localeCompare(a.ym)); // newest first
+
+    // Build lookup for YoY
+    const lookup = {};
+    memo.monthly_revenue.forEach(d => { lookup[d.ym] = d.rev_k; });
+
+    function yoyPct(ym, revK) {
+      const [yr, mo] = ym.split('-');
+      const prevYm = `${parseInt(yr) - 1}-${mo}`;
+      if (!lookup[prevYm]) return null;
+      return ((revK - lookup[prevYm]) / lookup[prevYm] * 100).toFixed(1);
+    }
+
+    // Compute annual totals (ascending for chart)
+    const annualTotals = {};
+    memo.monthly_revenue.forEach(d => {
+      const yr = d.ym.split('-')[0];
+      annualTotals[yr] = (annualTotals[yr] || 0) + d.rev_k;
+    });
+    const years = Object.keys(annualTotals).sort();
+    const annualVals = years.map(y => annualTotals[y]);
+
+    // Monthly rows (newest first, show prev month for MoM)
+    const ascData = [...memo.monthly_revenue].sort((a, b) => a.ym.localeCompare(b.ym));
+    const ascLookup = {}; ascData.forEach((d, i) => { ascLookup[d.ym] = i; });
+
+    const monthlyRows = mr.map(d => {
+      const idx = ascLookup[d.ym];
+      const prevEntry = idx > 0 ? ascData[idx - 1] : null;
+      const mom = prevEntry ? ((d.rev_k - prevEntry.rev_k) / prevEntry.rev_k * 100).toFixed(1) : null;
+      const yoy = yoyPct(d.ym, d.rev_k);
+      const [yr, mo] = d.ym.split('-');
+      const yrMark = mo === '01' ? `<span style="font-size:11px;color:#0ea5e9;margin-left:4px">▲${yr}</span>` : '';
+      return `<tr>
+        <td>${d.ym}${yrMark}</td>
+        <td class="num">${fmtK(d.rev_k)}</td>
+        <td class="num">${pctStr(mom)}</td>
+        <td class="num">${pctStr(yoy)}</td>
+      </tr>`;
+    }).join('');
+
+    // Annual summary rows
+    const annualSummaryRows = years.map(yr => {
+      const total = annualTotals[yr];
+      const prevYr = String(parseInt(yr) - 1);
+      const yoy = annualTotals[prevYr]
+        ? ((total - annualTotals[prevYr]) / annualTotals[prevYr] * 100).toFixed(1)
+        : null;
+      return `<tr class="yr-row">
+        <td><strong>${yr}年</strong></td>
+        <td class="num"><strong>${(total / 100000).toFixed(2)}億</strong></td>
+        <td class="num">—</td>
+        <td class="num">${pctStr(yoy)}</td>
+      </tr>`;
+    }).join('');
+
+    monthlyTabHtml = `
+      <div class="chart-section">
+        <div class="chart-title">年度營收趨勢（${years[0]}–${years[years.length-1]}）</div>
+        <div class="chart-wrap">
+          <canvas id="annual-rev-chart"></canvas>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="fin-table">
+          <thead>
+            <tr>
+              <th>年月</th>
+              <th class="num">月營收</th>
+              <th class="num">MoM</th>
+              <th class="num">YoY</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${annualSummaryRows}
+            ${monthlyRows}
+          </tbody>
+        </table>
+      </div>`;
+
+    // Store chart data for rendering after DOM insertion
+    window._annualChartData = { years, vals: annualVals };
+  }
+
+  const hasMontly = !!monthlyTabHtml;
   const finHtml = `
     <div class="card">
       <div class="card-title">財務摘要</div>
-      <div style="overflow-x:auto">
-        <table class="fin-table">
-          <thead><tr><th>期間</th><th>營收</th><th>YoY</th><th>EPS</th><th>備註</th></tr></thead>
-          <tbody>${finRows || '<tr><td colspan="5" style="color:#94a3b8;text-align:center">暫無資料</td></tr>'}</tbody>
-        </table>
+      ${hasMontly ? `
+      <div class="fin-tabs">
+        <button class="fin-tab active" onclick="switchTab(this,'tab-qtr')">季報 / 年報</button>
+        <button class="fin-tab" onclick="switchTab(this,'tab-monthly')">月營收</button>
+      </div>` : ''}
+      <div class="fin-tab-content active" id="tab-qtr">
+        <div style="overflow-x:auto">
+          <table class="fin-table">
+            <thead><tr><th>期間</th><th>營收</th><th>YoY</th><th>EPS</th><th>備註</th></tr></thead>
+            <tbody>${finRows || '<tr><td colspan="5" style="color:#94a3b8;text-align:center">暫無資料</td></tr>'}</tbody>
+          </table>
+        </div>
       </div>
+      ${hasMontly ? `<div class="fin-tab-content" id="tab-monthly">${monthlyTabHtml}</div>` : ''}
     </div>`;
 
-  // ── 4. UG metrics (optional, company-specific) ──
+  // ── 4. UG metrics ──────────────────────────────────────────────────────────
   let ugHtml = '';
   if (memo.ug_metrics) {
     const ug = memo.ug_metrics;
+    const globalTotal = ug.global_total || (ug.stores_tw + (ug.stores_hk||0) + (ug.stores_us||0));
     ugHtml = `
       <div class="card">
         <div class="card-title">UG 關鍵指標</div>
         <div class="metrics-grid">
           <div class="metric-card">
-            <div class="metric-label">台灣門市數</div>
-            <div class="metric-value">${ug.stores_tw} 家</div>
-            <div class="metric-note">目標年底 ${ug.target_2025_end} 家</div>
+            <div class="metric-label">全球門市數</div>
+            <div class="metric-value">${globalTotal} 家</div>
+            <div class="metric-note">台${ug.stores_tw} / 港${ug.stores_hk||0} / 美${ug.stores_us||0}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">台灣2026目標</div>
+            <div class="metric-value">${ug.target_2026_tw || ug.target_2025_end || '—'} 家</div>
+            <div class="metric-note">2025底50家，目標翻倍</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">美國預約訂單</div>
+            <div class="metric-value">${ug.us_pipeline_orders || '—'}+ 家</div>
+            <div class="metric-note">Sharetea加盟主轉介</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">加盟金</div>
@@ -256,32 +418,29 @@ function initPage() {
             <div class="metric-note">高毛利一次性收入</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">加盟金隱含EPS</div>
-            <div class="metric-value" style="color:#dc2626">${ug.implied_eps_from_ff}元</div>
-            <div class="metric-note">35間×550萬（凱基估算）</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">日均銷售</div>
-            <div class="metric-value">${ug.avg_daily_cups}+杯</div>
-            <div class="metric-note">忠孝敦化店王</div>
+            <div class="metric-label">2025年銷售杯數</div>
+            <div class="metric-value">${ug.annual_cups_sold || '—'}萬杯</div>
+            <div class="metric-note">三窨十五茉${ug.hero_product_cups||''}萬杯</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Sharetea 美國</div>
             <div class="metric-value">${memo.sharetea?.us_stores || '—'}家</div>
-            <div class="metric-note">${memo.sharetea?.us_interest || ''}</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">海外佈局</div>
-            <div class="metric-value" style="font-size:13px;line-height:1.5">${(ug.overseas_pipeline||[]).join('、') || '—'}</div>
+            <div class="metric-note">北美佔營收逾半</div>
           </div>
         </div>
+        ${(ug.overseas_pipeline||[]).length ? `
+        <div style="margin-top:12px;font-size:13px;color:#64748b;line-height:1.8">
+          <strong>海外佈局：</strong>${(ug.overseas_pipeline).join('　')}
+        </div>` : ''}
       </div>`;
   }
 
-  // ── 5. Competitors ──
+  // ── 5. Competitors ─────────────────────────────────────────────────────────
   let compHtml = '';
-  if (memo.competitors && memo.competitors.length) {
-    const rows = memo.competitors.map(c => {
+  const compData = memo.competitors && memo.competitors.length ? memo.competitors
+    : (memo.competitors_reference || []).map(c => ({ name: c.name, market: '中國', stores: c.stores }));
+  if (compData.length) {
+    const rows = compData.map(c => {
       const isThis = c.ticker === TICKER;
       return `<tr class="${isThis ? 'comp-highlight' : ''}">
         <td>${isThis ? '▶ ' : ''}${c.name}</td>
@@ -302,24 +461,9 @@ function initPage() {
           </table>
         </div>
       </div>`;
-  } else if (memo.competitors_reference && memo.competitors_reference.length) {
-    // Fallback to old format
-    const rows = memo.competitors_reference.map(c =>
-      `<tr><td>${c.name}</td><td>—</td><td>中國</td><td>${c.stores.toLocaleString()}</td><td>—</td><td></td></tr>`
-    ).join('');
-    compHtml = `
-      <div class="card">
-        <div class="card-title">競爭對手比較</div>
-        <div style="overflow-x:auto">
-          <table class="comp-table">
-            <thead><tr><th>公司</th><th>代碼</th><th>市場</th><th>門市數</th><th>PE</th><th>備註</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </div>`;
   }
 
-  // ── 6. Risks ──
+  // ── 6. Risks ───────────────────────────────────────────────────────────────
   const riskItems = (memo.risks || []).map((r, i) =>
     `<div class="risk-item"><span class="risk-num">R${i+1}</span><span class="risk-text">${r}</span></div>`
   ).join('');
@@ -329,7 +473,7 @@ function initPage() {
       ${riskItems || '<div style="color:#94a3b8;font-size:14px">暫無資料</div>'}
     </div>`;
 
-  // ── 7. Timeline ──
+  // ── 7. Timeline ────────────────────────────────────────────────────────────
   const tlItems = (memo.timeline || []).map(t =>
     `<div class="tl-item"><span class="tl-date">${t.date}</span><span class="tl-event">${t.event}</span></div>`
   ).join('');
@@ -339,14 +483,14 @@ function initPage() {
       ${tlItems || '<div style="color:#94a3b8;font-size:14px">暫無資料</div>'}
     </div>`;
 
-  // ── 8. Research notes ──
+  // ── 8. Research notes ──────────────────────────────────────────────────────
   const notesHtml = memo.research_notes ? `
     <div class="card">
       <div class="card-title">研究筆記</div>
       <div class="notes-box">${memo.research_notes}</div>
     </div>` : '';
 
-  // ── 10. Links ──
+  // ── 9. Links ───────────────────────────────────────────────────────────────
   let linksHtml = '';
   if (memo.links && memo.links.length) {
     const items = memo.links.map(l =>
@@ -371,7 +515,7 @@ function initPage() {
       </div>`;
   }
 
-  // ── Assemble ──
+  // ── Assemble ───────────────────────────────────────────────────────────────
   document.getElementById('main').innerHTML = `
     <div class="hero">
       <div class="hero-top">
@@ -393,6 +537,87 @@ function initPage() {
     ${linksHtml}
   `;
 
+  // Render annual chart after DOM is ready
+  if (window._annualChartData) {
+    renderAnnualChart(window._annualChartData);
+    delete window._annualChartData;
+  }
+}
+
+// ── Tab switcher ─────────────────────────────────────────────────────────────
+function switchTab(btn, tabId) {
+  // Deactivate all tabs in same card
+  const card = btn.closest('.card');
+  card.querySelectorAll('.fin-tab').forEach(b => b.classList.remove('active'));
+  card.querySelectorAll('.fin-tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  card.querySelector('#' + tabId).classList.add('active');
+
+  // Render chart when monthly tab is first opened
+  if (tabId === 'tab-monthly' && window._pendingAnnualChart) {
+    renderAnnualChart(window._pendingAnnualChart);
+    delete window._pendingAnnualChart;
+  }
+}
+
+// ── Annual revenue chart ──────────────────────────────────────────────────────
+function renderAnnualChart(data) {
+  // Chart might be in hidden tab; store for later if canvas not ready
+  const canvas = document.getElementById('annual-rev-chart');
+  if (!canvas) { window._pendingAnnualChart = data; return; }
+
+  const { years, vals } = data;
+  const colors = years.map((y, i) => {
+    const palette = ['#94a3b8', '#60a5fa', '#34d399'];
+    return palette[i % palette.length];
+  });
+  const maxVal = Math.max(...vals);
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: years.map(y => y + '年'),
+      datasets: [{
+        label: '年營收（千元）',
+        data: vals,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              const yoy = ctx.dataIndex > 0
+                ? ((v - vals[ctx.dataIndex - 1]) / vals[ctx.dataIndex - 1] * 100).toFixed(1)
+                : null;
+              const bil = (v / 100000).toFixed(2);
+              return yoy != null
+                ? `${bil}億　YoY ${yoy >= 0 ? '+' : ''}${yoy}%`
+                : `${bil}億`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 13 } } },
+        y: {
+          grid: { color: '#f1f5f9' },
+          ticks: {
+            font: { size: 12 },
+            callback: v => (v / 100000).toFixed(1) + '億'
+          },
+          suggestedMax: maxVal * 1.15
+        }
+      }
+    }
+  });
 }
 </script>
 </body>
