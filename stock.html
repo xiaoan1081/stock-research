@@ -207,8 +207,9 @@ function upPct(s, priceBase) {
 
 // Monthly revenue helpers
 function fmtK(k) {
-  // display in 萬元 with 1 decimal
-  return (k / 10).toFixed(0) + '萬';
+  const wan = k / 10;
+  if (wan >= 10000) return (wan / 10000).toFixed(3) + '億';
+  return wan.toFixed(0) + '萬';
 }
 function pctStr(val) {
   if (val == null) return '<span class="neu">—</span>';
