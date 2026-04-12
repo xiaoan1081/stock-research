@@ -71,7 +71,8 @@ var MEMO_2756 = {
     { title: "公關事件報導（東森財經）",               url: "https://fnc.ebc.net.tw/fncnews/headline/203044", type: "news" },
     { title: "UG董座北車致意爭議（聯合新聞）",         url: "https://udn.com/news/story/7251/9218250", type: "news" },
     { title: "2025 Q2 財報（2025-08-11）",            url: "https://mops.twse.com.tw/mops/web/index", type: "filing" },
-    { title: "Vocus 作者案例文章",                     url: "https://vocus.cc/article/688223befd897800013b012d", type: "news" }
+    { title: "Vocus：聯發國際站穩北美市場分析",          url: "https://vocus.cc/article/65d9483dfd89780001ddaa2e", type: "news" },
+    { title: "Vocus：聯發國際(2756)價值投資分析 策略2", url: "https://vocus.cc/article/682065d7fd89780001944cee", type: "news" }
   ],
   risks: [
     "美國展店進度不確定：30家訂單能否如期開幕是2026年最大變數",
