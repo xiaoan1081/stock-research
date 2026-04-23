@@ -2,11 +2,11 @@
 // Claude 每次只讀寫這個檔案（及 log.jsonl），不碰 index.html
 var STOCKS = {
   meta: {
-    updated: "2026/04/11",
-    close_date: "2026/04/07",
-    memo_updated: "2026/04/11",
-    counts: { tw: 1, us: 0, hk: 0 },
-    note: "股價來源改為 Fugle MarketData API。"
+    updated: "2026/04/23",
+    close_date: "2026/04/23",
+    memo_updated: "2026/04/23",
+    counts: { tw: 2, us: 0, hk: 0 },
+    note: "股價來源改為 Fugle MarketData API。2026/04/23 新增 4111 濟生醫藥。"
   },
   watching: [
     {
@@ -30,6 +30,28 @@ var STOCKS = {
       ],
       note: "雙品牌輕資產：Sharetea 500+全球門市（北美佔營收過半）+ UG全球55家（台灣50/香港3/美國2）。2025全年EPS 3.93元（+63%YoY），年營收11.72億（+69.6%），均創歷史新高。PE 17.9x（@70.3元）。2026E EPS 5元×20x=目標100元。PR事件+關稅恐慌使股價自高點131元跌46.3%，風險大致反映。追蹤：美國訂單兌現速度、台灣加盟主盈利能力。",
       first_rec: "2026/04/11"
+    },
+    {
+      ticker: "4111",
+      name: "濟生醫藥",
+      mkt: "TWSE",
+      currency: "TWD",
+      sector: "製藥／輸液",
+      price: 29.25,
+      target: 41,
+      upside_pct: 40.2,
+      pe: 10.67,
+      pb: null,
+      conviction: "medium",
+      catalysts: [
+        { event: "健保輸液調漲持續適用（2024-10生效，>20%，2025年同樣適用）", date: "持續" },
+        { event: "韓國血液透析藥品認證（2024-Q4送件，等候核准）", date: "2026預期" },
+        { event: "泰國抗生素品項新增認證", date: "2025-2026" },
+        { event: "2026 Q1財報（確認毛利率是否守穩39%+，永豐搶市影響）", date: "2026-05" },
+        { event: "FY2025現金股利1.30元發放（殖利率4.4%）", date: "2026-Q2" }
+      ],
+      note: "台灣輸液製藥廠。2024年競爭對手永豐化學被迫停工+健保調漲雙利多，毛利率從28%跳升至39-41%。FY2025 EPS 2.74元（+42%），PE 10.67x（產業均值39x），估值極低。風險：永豐已返市低價搶客、台幣升值FX損失、月均營收1.1-1.2億（成長趨緩）。流動性極低（日成交約175-580萬NT）。海外擴展（韓/泰）為 upside option。",
+      first_rec: "2026/04/23"
     }
   ],
   rumors: []
