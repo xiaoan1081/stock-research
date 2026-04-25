@@ -4,3 +4,4 @@
 {"date":"2026-04-11","action":"fugle_api_switch","ticker":"2756","price":70.3,"close_date":"2026-04-07","note":"股價來源改為FugleAPI，API key驗證成功"}
 {"date":"2026-04-11","action":"memo_update","ticker":"2756","note":"2756備忘更新至最新：2025全年EPS 3.93元(+63%)、營收11.72億(+69.6%)、UG全球55家(台50/香3/美2)、美國30家訂單、12月公關事件補充、估值更新"}
 {"date":"2026-04-23","action":"new_stock","ticker":"4111","price":29.25,"target":41,"upside_pct":40.2,"pe":10.67,"conviction":"medium","note":"濟生醫藥 新增：輸液製藥廠，永豐停工+健保調漲雙利多，FY2025 EPS 2.74元，PE 10.67x極低，殖利率4.4%，主要風險為永豐返市+台幣升值"}
+{"date":"2026-04-25","action":"daily_update","note":"週六台股休市；Fugle最新資料為3/25，價格維持4/23值；2756@70.3 4111@29.25"}

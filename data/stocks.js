@@ -2,8 +2,8 @@
 // Claude 每次只讀寫這個檔案（及 log.jsonl），不碰 index.html
 var STOCKS = {
   meta: {
-    updated: "2026/04/23",
-    close_date: "2026/04/23",
+    updated: "2026/04/25",
+    close_date: "2026/04/24",
     memo_updated: "2026/04/23",
     counts: { tw: 2, us: 0, hk: 0 },
     note: "股價來源改為 Fugle MarketData API。2026/04/23 新增 4111 濟生醫藥。"
