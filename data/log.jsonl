@@ -6,3 +6,4 @@
 {"date":"2026-04-23","action":"new_stock","ticker":"4111","price":29.25,"target":41,"upside_pct":40.2,"pe":10.67,"conviction":"medium","note":"濟生醫藥 新增：輸液製藥廠，永豐停工+健保調漲雙利多，FY2025 EPS 2.74元，PE 10.67x極低，殖利率4.4%，主要風險為永豐返市+台幣升值"}
 {"date":"2026-04-25","action":"daily_update","note":"週六台股休市；Fugle最新資料為3/25，價格維持4/23值；2756@70.3 4111@29.25"}
 {"date":"2026-04-25","action":"memo_update","note":"4111.js 補充：四大業務板塊/外泌體60%GM/私募5000千股@20元/佳醫同業/2026-2028E EPS預測（來源：AI研究報告）"}
+{"date":"2026-04-26","action":"add","ticker":"2483","note":"新增百容電子：半導體導線架轉型，本業仍虧，月均1.8億為轉正門檻，conviction=low"}
