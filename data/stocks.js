@@ -2,11 +2,11 @@
 // Claude 每次只讀寫這個檔案（及 log.jsonl），不碰 index.html
 var STOCKS = {
   meta: {
-    updated: "2026/04/26",
+    updated: "2026/04/27",
     close_date: "2026/04/25",
-    memo_updated: "2026/04/26",
-    counts: { tw: 3, us: 0, hk: 0 },
-    note: "2026/04/26 新增 2483 百容電子。股價來源改為 Fugle MarketData API。"
+    memo_updated: "2026/04/27",
+    counts: { tw: 3, us: 1, hk: 0 },
+    note: "2026/04/27 新增 CURV Torrid Holdings（美股）。"
   },
   watching: [
     {
@@ -74,6 +74,28 @@ var STOCKS = {
       ],
       note: "台中新廠（27.51億）折舊重壓（年~1.4億），本業仍虧（營益率-4.8%）。2026/1月營收1.80億（41個月新高），半導體佔比超50%，車用混動訂單開始出貨。本淨比0.9（淨值23.46元）有下檔支撐，但本業轉正前觀察優先。警示：經理人蔡槐仁幾近清倉（312→12張）。",
       first_rec: "2026/04/20"
+    },
+    {
+      ticker: "CURV",
+      name: "Torrid Holdings",
+      mkt: "NYSE",
+      currency: "USD",
+      sector: "大尺碼女裝零售",
+      price: 1.83,
+      target: 2.50,
+      upside_pct: 36.6,
+      pe: null,
+      pb: null,
+      conviction: "medium",
+      catalysts: [
+        { event: "Q1 FY2026 業績（最弱季）：EBITDA 指引 $14-18M；再次超預期可觸發空頭回補", date: "2026-06-04" },
+        { event: "FINRA 4/15 Short Interest 公布：確認 4 月回落空頭是否回補", date: "2026-05初" },
+        { event: "機構 13F Q1 2026 申報（Millennium/Nomura/BofA 是否續增）", date: "2026-05-15" },
+        { event: "FY2026 Q3 鞋類業務全面重啟（消除 -260bps 同店拖累，轉為正貢獻）", date: "2026-09" },
+        { event: "Sycamore Partners 任何 Form 4 申報（EDGAR 監控）", date: "持續" }
+      ],
+      note: "北美最大大尺碼女裝品牌（size 10-30），市占 ~62%，9% 退貨率護城河。FY2026 轉型三引擎：門店優化($40M省）+ 子品牌$70M→$110M + Q3鞋類重啟。Sycamore 控股 56.9%（最大隱患），頂級機構 2025 Q3 低點建倉。4/25 修正：空頭持倉 3/31 達 4.3% 仍在累積，CFO/CCO 已於 $1.98-2.06 主動減持。EV/EBITDA 3.7x（同業 8-10x）嚴重低估，但短期下行風險不對稱。",
+      first_rec: "2026/04/27"
     }
   ],
   rumors: []
